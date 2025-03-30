@@ -9,21 +9,17 @@ class BybitFuturesClient(BaseExchangeClient):
     """
     Клиент для взаимодействия с фьючерсным API Bybit.
     """
-    def __init__(self, api_key, api_secret, use_testnet=True):
+    def __init__(self, api_key, api_secret, base_url):
         """
         Инициализация клиента.
 
         Args:
             api_key (str): API ключ.
             api_secret (str): Секретный ключ.
-            use_testnet (bool): Использовать тестовую сеть (True) или реальную (False).
+            base_url (str): Базовый URL для API (Testnet или Mainnet).
         """
         super().__init__(api_key, api_secret)
-        if use_testnet:
-            self.base_url = "https://api-testnet.bybit.com"
-        else:
-            self.base_url = "https://api.bybit.com"
-        self.use_testnet = use_testnet
+        self.base_url = base_url
 
     def place_order(self, symbol, side, type, quantity, price=None):
         """
@@ -39,7 +35,7 @@ class BybitFuturesClient(BaseExchangeClient):
         Returns:
             dict: Ответ от API в формате JSON.
         """
-        endpoint = "/v2/private/order/create" # Конечная точка API для размещения ордера
+        endpoint = "/v2/private/order/create"  # Оставляем пока без изменений
         url = self.base_url + endpoint
         timestamp = str(int(time.time() * 1000))
         params = {
@@ -47,17 +43,17 @@ class BybitFuturesClient(BaseExchangeClient):
             "side": side,
             "order_type": type.upper(),  # Bybit требует верхний регистр
             "qty": quantity,
-            "price": price, # Обязательно для Limit ордеров
-            "time_in_force": "GoodTillCancel", # Или "ImmediateOrCancel", "FillOrKill",
+            "price": price,  # Обязательно для Limit ордеров
+            "time_in_force": "GoodTillCancel",  # Или "ImmediateOrCancel", "FillOrKill",
             "timestamp": timestamp,
             "api_key": self.api_key
         }
         params['sign'] = self._generate_signature(params)
-        
+
         headers = {
             "Content-Type": "application/json"
         }
-        self._rate_limit() # Применяем ограничение скорости
+        self._rate_limit()  # Применяем ограничение скорости
         response = requests.post(url, headers=headers, json=params)
         return self._handle_response(response)
 
@@ -71,9 +67,10 @@ class BybitFuturesClient(BaseExchangeClient):
         Returns:
             dict: Ответ от API в формате JSON.
         """
-        endpoint = "/v2/public/tickers"  # Конечная точка API для получения данных о рынке
-        url = f"{self.base_url}{endpoint}?symbol={symbol}"
-        self._rate_limit() # Применяем ограничение скорости
+        endpoint = "/v5/market/tickers"  # Обновленный эндпоинт для API v5
+        category = "linear"  # Указываем категорию
+        url = f"{self.base_url}{endpoint}?symbol={symbol}&category={category}"
+        self._rate_limit()  # Применяем ограничение скорости
         response = requests.get(url)
         return self._handle_response(response)
 
@@ -87,19 +84,22 @@ class BybitFuturesClient(BaseExchangeClient):
         Returns:
             dict: Ответ от API в формате JSON.
         """
-        endpoint = "/v2/private/wallet/balance" # Конечная точка API для получения баланса
+        endpoint = "/v5/account/wallet-balance"  # Обновленный эндпоинт для API v5
+        url = self.base_url + endpoint
         timestamp = str(int(time.time() * 1000))
         params = {
             "coin": asset,
             "timestamp": timestamp,
-            "api_key": self.api_key
+            "api_key": self.api_key,
+            "accountType": "UNIFIED",  # Изменяем тип аккаунта
+            "category": "linear"  # Добавляем категорию
         }
         params['sign'] = self._generate_signature(params)
 
         headers = {
             "Content-Type": "application/json"
         }
-        self._rate_limit() # Применяем ограничение скорости
+        self._rate_limit()  # Применяем ограничение скорости
         response = requests.get(url, headers=headers, params=params)
         return self._handle_response(response)
 
@@ -114,7 +114,7 @@ class BybitFuturesClient(BaseExchangeClient):
         Returns:
             dict: Ответ от API в формате JSON.
         """
-        endpoint = "/v2/private/order/cancel" # Конечная точка API для отмены ордера
+        endpoint = "/v2/private/order/cancel"  # Оставляем пока без изменений
         url = self.base_url + endpoint
         timestamp = str(int(time.time() * 1000))
         params = {
@@ -128,6 +128,6 @@ class BybitFuturesClient(BaseExchangeClient):
         headers = {
             "Content-Type": "application/json"
         }
-        self._rate_limit() # Применяем ограничение скорости
+        self._rate_limit()  # Применяем ограничение скорости
         response = requests.post(url, headers=headers, json=params)
         return self._handle_response(response)

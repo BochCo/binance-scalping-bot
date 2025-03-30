@@ -2,6 +2,7 @@
 
 from src.utils.config_reader import read_config
 from src.factories.exchange_client_factory import get_exchange_client
+from src.exchange.bybit_futures_client import BybitFuturesClient  # Добавьте этот импорт
 
 def main():
     """
