@@ -1,0 +1,13 @@
+2025-03-30 19:42:37,865 - INFO - Рыночные данные BTC/USDT: 82443.10
+2025-03-30 19:42:38,190 - INFO - Баланс USDT: 51000
+2025-03-30 19:42:38,520 - INFO - Ордер размещён: ID 69b2af90-a6cf-4165-b848-db51e2b7bcf8
+2025-03-30 19:44:00,124 - INFO - Доступный баланс: 51000.0 USDT
+2025-03-30 19:44:00,448 - INFO - Ордер размещён: {'retCode': 0, 'retMsg': 'OK', 'result': {'orderId': '26edc3b2-9806-42b2-9fb1-1195c958cac5', 'orderLinkId': ''}, 'retExtInfo': {}, 'time': 1743353041076}
+2025-03-30 19:48:52,937 - INFO - Текущий баланс: 51000.0 USDT
+2025-03-30 19:48:53,337 - INFO - Ордер размещён. ID: c6cd38dc-5dd2-4f99-a9e2-9a9f07088929
+2025-03-30 19:48:55,784 - ERROR - Ошибка: list index out of range
+Traceback (most recent call last):
+  File "D:\Pyton\binance-scalping-bot\bbtest2\main.py", line 35, in main
+    logging.info(f"Статус ордера: {status['result']['list'][0]['orderStatus']}")
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range

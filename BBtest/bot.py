@@ -27,20 +27,22 @@ class Bot:
         """
         Получение баланса.
         """
-        endpoint = "/v5/account/wallet-balance"
+        endpoint = "/v5/asset/transfer/query-account-coins-balance"
         payload = {
             "accountType": "UNIFIED",
-            "category": "linear",
             "coin": coin
         }
         
-        headers, raw_body = prepare_request(self.api_key, self.api_secret, endpoint, payload=payload)
-        response = requests.post(self.base_url + endpoint, headers=headers, data=raw_body)
-        
-        if response.status_code == 200:
-            return response.json()
-        else:
-            raise Exception(f"Ошибка при получении баланса: {response.text}")
+        try:
+            headers, raw_body = prepare_request(self.api_key, self.api_secret, endpoint, payload=payload)
+            response = requests.get(self.base_url + endpoint, headers=headers, params=payload)
+            
+            if response.status_code == 200:
+                return response.json()
+            else:
+                raise Exception(f"Ошибка при получении баланса: {response.text}")
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Ошибка сети при получении баланса: {str(e)}")
     
     def place_order(self, symbol, side, order_type, qty, price=None):
         """

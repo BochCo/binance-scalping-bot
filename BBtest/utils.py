@@ -17,34 +17,31 @@ def generate_signature(secret_key, message):
 
 def prepare_request(api_key, secret_key, endpoint, method="POST", payload=None):
     """
-    Подготовка запроса к Bybit API.
+    Подготовка запроса к Bybit API V5.
     """
     timestamp = str(int(time.time() * 1000))
-    recv_window = "5000"
-    
+    recv_window = "5000" # По умолчанию 5000, можно увеличить при необходимости
+
     if payload is None:
         payload = {}
-    
-    # Добавляем обязательные параметры
-    payload.update({
-        "api_key": api_key,
-        "timestamp": timestamp
-    })
-    
-    # Сортируем параметры по алфавиту
-    sorted_payload = dict(sorted(payload.items()))
-    raw_body = json.dumps(sorted_payload, separators=(',', ':'))
-    
-    # Формируем строку для подписи
+
+    # Для POST-запросов с JSON тело не сортируется
+    # Для GET-запросов параметры сортируются (здесь не реализовано, т.к. пока не используется)
+    # Преобразуем payload в JSON строку "как есть"
+    raw_body = json.dumps(payload, separators=(',', ':'))
+
+    # Формируем строку для подписи (timestamp + apiKey + recvWindow + requestBody)
     message = f"{timestamp}{api_key}{recv_window}{raw_body}"
     signature = generate_signature(secret_key, message)
-    
+
     # Формируем заголовки
     headers = {
         "X-BAPI-API-KEY": api_key,
         "X-BAPI-TIMESTAMP": timestamp,
         "X-BAPI-SIGN": signature,
+        "X-BAPI-RECV-WINDOW": recv_window, # Добавляем recv_window в заголовки
         "Content-Type": "application/json"
     }
-    
+
+    # Возвращаем заголовки и тело запроса (для POST)
     return headers, raw_body
