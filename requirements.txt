@@ -1,0 +1,3 @@
+python-binance
+ta-lib # Раскомментируйте, если будете использовать ta-lib
+Backtrader # Раскомментируйте, если будете использовать backtesting

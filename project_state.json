@@ -1,42 +1,110 @@
 {
-  "project_name": "Binance Scalping Bot",
-  "status": "Planning",
+  "project_name": "binance-scalping-bot",
+  "description": "Бот для скальпинга криптовалюты на Binance и Bybit.",
+  "status": "В процессе разработки",
+  "current_stage": "Рефакторинг структуры проекта и определение базовых классов",
+  "last_updated": "2024-01-26",
+  "team_members": [
+    {
+      "name": "Costa Bochin",  // Замените на ваше имя
+      "role": "Разработчик"
+    },
+    {
+      "name": "Assistant",
+      "role": "AI Ассистент"
+    }
+  ],
+  "architecture": {
+    "modules": [
+      "Exchange",
+      "Trading",
+      "Models",
+      "Utils",
+      "Factories"
+    ],
+    "description": "Модульная архитектура для упрощения расширения и поддержки."
+  },
+  "configuration": {
+    "file_format": "INI",
+    "description": "Конфигурационный файл для хранения API ключей, настроек биржи и других параметров для нескольких бирж."
+  },
+  "exchanges": [
+    {
+      "name": "Binance",
+      "supported_markets": ["spot", "futures"],
+      "api_status": "Не реализовано"
+    },
+    {
+      "name": "Bybit",
+      "supported_markets": ["spot", "futures"],
+      "api_status": "В планировании"
+    }
+  ],
   "tasks": [
     {
       "id": 1,
       "name": "Создать структуру проекта",
-      "status": "Completed",
-      "description": "Разделить проект на модули: core, strategies, utils"
+      "status": "Выполнено",
+      "description": "Разделить проект на модули: exchange, trading, models, utils, factories"
     },
     {
       "id": 2,
-      "name": "Настроить взаимодействие с Binance API",
-      "status": "To Do",
-      "description": "Реализовать функции для получения данных о рынке, размещения ордеров"
+      "name": "Определить интерфейс IExchangeClient и базовый класс BaseExchangeClient",
+      "status": "Выполнено",
+      "description": "Создать абстрактный интерфейс и базовый класс для клиентов биржи."
     },
     {
       "id": 3,
-      "name": "Реализовать базовую торговую стратегию",
-      "status": "To Do",
-      "description": "Написать стратегию на основе RSI или других индикаторов"
+      "name": "Реализовать ExchangeClientFactory",
+      "status": "В процессе",
+      "description": "Создать фабрику для создания экземпляров клиентов биржи на основе конфигурации."
     },
     {
       "id": 4,
-      "name": "Настроить логирование",
-      "status": "To Do",
-      "description": "Добавить логирование для отслеживания работы бота и выявления ошибок"
+      "name": "Реализовать взаимодействие с API Bybit Futures",
+      "status": "В процессе",
+      "description": "Реализовать методы для размещения ордеров, получения данных о рынке и управления балансами, используя API Bybit Futures Testnet."
     },
     {
       "id": 5,
-      "name": "Реализовать управление рисками",
-      "status": "To Do",
-      "description": "Добавить стоп-лоссы и тейк-профиты"
+      "name": "Реализовать обработку ошибок и ограничение скорости запросов",
+      "status": "В процессе",
+      "description": "Добавить надежную обработку ошибок и ограничение скорости запросов в BaseExchangeClient."
+    },
+   {
+      "id": 6,
+      "name": "Реализовать взаимодействие с API Binance",
+      "status": "Запланировано",
+      "description": "Реализовать методы для размещения ордеров, получения данных о рынке и управления балансами, используя API Binance."
     },
     {
-      "id": 6,
+      "id": 7,
+      "name": "Реализовать базовую торговую стратегию",
+      "status": "Запланировано",
+      "description": "Написать стратегию скальпинга на основе RSI или других индикаторов"
+    },
+    {
+      "id": 8,
+      "name": "Настроить логирование",
+      "status": "Запланировано",
+      "description": "Добавить логирование для отслеживания работы бота и выявления ошибок"
+    },
+    {
+      "id": 9,
+      "name": "Реализовать управление рисками",
+      "status": "Запланировано",
+      "description": "Добавить функциональность стоп-лоссов и тейк-профитов"
+    },
+    {
+      "id": 10,
       "name": "Протестировать бота на исторических данных",
-      "status": "To Do",
+      "status": "Запланировано",
       "description": "Использовать backtesting для оценки эффективности стратегии"
     }
+  ],
+  "next_steps": [
+    "Реализовать ExchangeClientFactory.",
+    "Реализовать класс BaseExchangeClient с обработкой ошибок, ограничением скорости запросов и аутентификацией.",
+    "Реализовать взаимодействие с API для Bybit Futures Testnet (place_order, get_market_data, get_balance, cancel_order)."
   ]
 }

@@ -1,0 +1,25 @@
+my_project/
+├── src/
+│   ├── exchange/
+│   │   ├── exchange_client.py       # IExchangeClient, BaseExchangeClient
+│   │   ├── binance_futures_client.py # BinanceFuturesClient
+│   │   ├── binance_spot_client.py    # BinanceSpotClient
+│   │   ├── bybit_futures_client.py   # BybitFuturesClient
+│   │   └── bybit_spot_client.py      # BybitSpotClient
+│   ├── trading/
+│   │   └── ...
+│   ├── models/
+│   │   ├── order.py              # Order class
+│   │   ├── position.py           # Position class
+│   │   └── market_data.py        # MarketData class
+│   ├── utils/
+│   │   ├── config_reader.py      # Чтение конфигурационных файлов
+│   │   └── ...
+│   ├── factories/
+│   │   └── exchange_client_factory.py  # ExchangeClientFactory
+├── config/
+│   └── config.ini            # Пример конфигурационного файла
+├── tests/
+│   └── ...
+├── project_state.json    # Состояние проекта
+└── ...
