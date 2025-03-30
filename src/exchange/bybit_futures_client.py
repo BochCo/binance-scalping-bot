@@ -4,6 +4,7 @@ import requests
 import time
 from src.exchange.exchange_client import BaseExchangeClient
 import urllib.parse
+import json
 
 class BybitFuturesClient(BaseExchangeClient):
     """
@@ -35,26 +36,43 @@ class BybitFuturesClient(BaseExchangeClient):
         Returns:
             dict: Ответ от API в формате JSON.
         """
-        endpoint = "/v2/private/order/create"  # Оставляем пока без изменений
+        endpoint = "/v5/order/create"  # Обновленный эндпоинт для API v5
         url = self.base_url + endpoint
         timestamp = str(int(time.time() * 1000))
+        recv_window = 5000 # Recommended
         params = {
             "symbol": symbol,
-            "side": side,
-            "order_type": type.upper(),  # Bybit требует верхний регистр
-            "qty": quantity,
-            "price": price,  # Обязательно для Limit ордеров
-            "time_in_force": "GoodTillCancel",  # Или "ImmediateOrCancel", "FillOrKill",
-            "timestamp": timestamp,
-            "api_key": self.api_key
+            "side": side.capitalize(),  # Bybit требует CamelCase
+            "orderType": type.capitalize(),  # Bybit требует CamelCase
+            "qty": str(quantity),  # Bybit требует строку
+            "price": str(price) if price else None,  # Bybit требует строку, только для LIMIT
+            "timeInForce": "GoodTillCancel",  # Или "ImmediateOrCancel", "FillOrKill"
+            "category": "linear",
+            "accountType": "UNIFIED" # Добавляем тип аккаунта
         }
-        params['sign'] = self._generate_signature(params)
+        if price is None:
+            del params["price"] # Price не нужен для MARKET ордеров
+
+        print(f"place_order - api_secret: {self.api_secret}")
+        print(f"place_order - timestamp: {timestamp}")
+        print(f"place_order - api_key: {self.api_key}")
+        print(f"place_order - recv_window: {recv_window}")
+        print(f"place_order - endpoint: {endpoint}")
+        print(f"place_order - params: {params}")
+
+
+        signature = self._generate_signature(self.api_secret, timestamp, self.api_key, recv_window, endpoint, params)
 
         headers = {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "X-BAPI-API-KEY": self.api_key,
+            "X-BAPI-TIMESTAMP": timestamp,
+            "X-BAPI-SIGN": signature,
+			"X-BAPI-RECV-WINDOW": str(recv_window)
         }
+
         self._rate_limit()  # Применяем ограничение скорости
-        response = requests.post(url, headers=headers, json=params)
+        response = requests.post(url, headers=headers, data=json.dumps(params))
         return self._handle_response(response)
 
     def get_market_data(self, symbol):
@@ -87,6 +105,7 @@ class BybitFuturesClient(BaseExchangeClient):
         endpoint = "/v5/account/wallet-balance"  # Обновленный эндпоинт для API v5
         url = self.base_url + endpoint
         timestamp = str(int(time.time() * 1000))
+        recv_window = 5000
         params = {
             "coin": asset,
             "timestamp": timestamp,
@@ -94,11 +113,24 @@ class BybitFuturesClient(BaseExchangeClient):
             "accountType": "UNIFIED",  # Изменяем тип аккаунта
             "category": "linear"  # Добавляем категорию
         }
-        params['sign'] = self._generate_signature(params)
+
+        print(f"get_balance - api_secret: {self.api_secret}")
+        print(f"get_balance - timestamp: {timestamp}")
+        print(f"get_balance - api_key: {self.api_key}")
+        print(f"get_balance - recv_window: {recv_window}")
+        print(f"get_balance - endpoint: {endpoint}")
+        print(f"get_balance - params: {params}")
+
+        signature = self._generate_signature(self.api_secret, timestamp, self.api_key, recv_window, endpoint, params)
 
         headers = {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "X-BAPI-API-KEY": self.api_key,
+            "X-BAPI-TIMESTAMP": timestamp,
+            "X-BAPI-SIGN": signature,
+            "X-BAPI-RECV-WINDOW": str(recv_window)
         }
+
         self._rate_limit()  # Применяем ограничение скорости
         response = requests.get(url, headers=headers, params=params)
         return self._handle_response(response)
@@ -114,6 +146,7 @@ class BybitFuturesClient(BaseExchangeClient):
         Returns:
             dict: Ответ от API в формате JSON.
         """
+        # TODO: Implement cancel order with API v5
         endpoint = "/v2/private/order/cancel"  # Оставляем пока без изменений
         url = self.base_url + endpoint
         timestamp = str(int(time.time() * 1000))
@@ -123,7 +156,7 @@ class BybitFuturesClient(BaseExchangeClient):
             "timestamp": timestamp,
             "api_key": self.api_key
         }
-        params['sign'] = self._generate_signature(params)
+        params['sign'] = self._generate_signature(self.api_secret, timestamp, self.api_key, 5000, endpoint, params)
 
         headers = {
             "Content-Type": "application/json"

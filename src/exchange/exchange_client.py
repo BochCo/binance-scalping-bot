@@ -6,6 +6,7 @@ import requests
 import hashlib
 import hmac
 import urllib.parse
+import json
 
 class IExchangeClient(ABC):
     """
@@ -60,8 +61,8 @@ class BaseExchangeClient(IExchangeClient):
         try:
             response.raise_for_status()  # Проверка на HTTP ошибки
             data = response.json()
-            if 'ret_code' in data and data['ret_code'] != 0: # Проверка на ошибки Bybit
-                raise Exception(f"Ошибка API: {data['ret_code']} - {data['ret_msg']}")
+            if 'retCode' in data and data['retCode'] != 0: # Проверка на ошибки Bybit
+                raise Exception(f"Ошибка API: {data['retCode']} - {data['retMsg']}")
             return data
         except requests.exceptions.HTTPError as e:
             raise Exception(f"HTTP ошибка: {e}")
@@ -74,20 +75,34 @@ class BaseExchangeClient(IExchangeClient):
         """
         time.sleep(self.rate_limit_delay)
 
-    def _generate_signature(self, params):
+    def _generate_signature(self, api_secret, timestamp, api_key, recv_window, endpoint, params):
         """
-        Генерирует подпись для запроса к API Bybit.
+        Генерирует подпись для запроса к API Bybit v5.
 
         Args:
+            api_secret (str): Секретный ключ API.
+            timestamp (str): Timestamp запроса.
+            api_key (str): API ключ.
+            recv_window (str): recv_window
+            endpoint (str): Endpoint запроса
             params (dict): Параметры запроса.
 
         Returns:
             str: Подпись запроса.
         """
-        query_string = urllib.parse.urlencode(sorted(params.items(), key=lambda x: x[0]))
-        signature = hmac.new(
-            self.api_secret.encode("utf-8"),
-            query_string.encode("utf-8"),
-            hashlib.sha256
-        ).hexdigest()
+
+        sign_str = str(timestamp) + api_key + str(recv_window)
+
+        # Manually build the query string
+        query_string = ""
+        for key, value in sorted(params.items()):
+            query_string += f"{key}={value}&"
+        query_string = query_string[:-1]  # Remove the trailing "&"
+
+        sign_str += query_string
+
+        print(f"_generate_signature - sign_str: {sign_str}")
+        hash = hmac.new(api_secret.encode("utf-8"), sign_str.encode("utf-8"), hashlib.sha256)
+        signature = hash.hexdigest()
+        print(f"_generate_signature - signature: {signature}")
         return signature
