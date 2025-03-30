@@ -1,32 +1,129 @@
-# src/exchange/binance_futures_client.py
+# src/exchange/bybit_futures_client.py
 
+import requests
+import time
 from src.exchange.exchange_client import BaseExchangeClient
+import urllib.parse
 
-class BinanceFuturesClient(BaseExchangeClient):
+class BinanceFuturesClient (BaseExchangeClient):
     """
-    Клиент для взаимодействия с фьючерсным API Binance.
+    Клиент для взаимодействия с фьючерсным API Bybit.
     """
-    def __init__(self, api_key, api_secret):
+    def __init__(self, api_key, api_secret, base_url):  # Убираем use_testnet
+        """
+        Инициализация клиента.
+
+        Args:
+            api_key (str): API ключ.
+            api_secret (str): Секретный ключ.
+            base_url (str): Базовый URL для API (Testnet или Mainnet).
+        """
         super().__init__(api_key, api_secret)
-        # Binance Futures specific initialization
-        pass
+        self.base_url = base_url # Используем переданный base_url
 
     def place_order(self, symbol, side, type, quantity, price=None):
-        # Binance Futures implementation
-        print("BinanceFuturesClient: place_order() not implemented yet")
-        pass
+        """
+        Размещает ордер на бирже.
+
+        Args:
+            symbol (str): Символ торгуемой пары (например, BTCUSDT).
+            side (str): Сторона ордера (BUY или SELL).
+            type (str): Тип ордера (MARKET или LIMIT).
+            quantity (float): Количество для покупки/продажи.
+            price (float, optional): Цена ордера (для LIMIT ордеров). Defaults to None.
+
+        Returns:
+            dict: Ответ от API в формате JSON.
+        """
+        endpoint = "/v2/private/order/create" # Конечная точка API для размещения ордера
+        url = self.base_url + endpoint
+        timestamp = str(int(time.time() * 1000))
+        params = {
+            "symbol": symbol,
+            "side": side,
+            "order_type": type.upper(),  # Bybit требует верхний регистр
+            "qty": quantity,
+            "price": price, # Обязательно для Limit ордеров
+            "time_in_force": "GoodTillCancel", # Или "ImmediateOrCancel", "FillOrKill",
+            "timestamp": timestamp,
+            "api_key": self.api_key
+        }
+        params['sign'] = self._generate_signature(params)
+        
+        headers = {
+            "Content-Type": "application/json"
+        }
+        self._rate_limit() # Применяем ограничение скорости
+        response = requests.post(url, headers=headers, json=params)
+        return self._handle_response(response)
 
     def get_market_data(self, symbol):
-        # Binance Futures implementation
-        print("BinanceFuturesClient: get_market_data() not implemented yet")
-        pass
+        """
+        Получает данные о рынке (текущую цену).
+
+        Args:
+            symbol (str): Символ торгуемой пары (например, BTCUSDT).
+
+        Returns:
+            dict: Ответ от API в формате JSON.
+        """
+        endpoint = "/v2/public/tickers"  # Конечная точка API для получения данных о рынке
+        url = f"{self.base_url}{endpoint}?symbol={symbol}"
+        self._rate_limit() # Применяем ограничение скорости
+        response = requests.get(url)
+        return self._handle_response(response)
 
     def get_balance(self, asset):
-        # Binance Futures implementation
-        print("BinanceFuturesClient: get_balance() not implemented yet")
-        pass
+        """
+        Получает баланс аккаунта.
+
+        Args:
+            asset (str): Символ валюты (например, USDT).
+
+        Returns:
+            dict: Ответ от API в формате JSON.
+        """
+        endpoint = "/v2/private/wallet/balance" # Конечная точка API для получения баланса
+        timestamp = str(int(time.time() * 1000))
+        params = {
+            "coin": asset,
+            "timestamp": timestamp,
+            "api_key": self.api_key
+        }
+        params['sign'] = self._generate_signature(params)
+
+        headers = {
+            "Content-Type": "application/json"
+        }
+        self._rate_limit() # Применяем ограничение скорости
+        response = requests.get(url, headers=headers, params=params)
+        return self._handle_response(response)
 
     def cancel_order(self, order_id, symbol):
-        # Binance Futures implementation
-        print("BinanceFuturesClient: cancel_order() not implemented yet")
-        pass
+        """
+        Отменяет ордер.
+
+        Args:
+            order_id (str): ID ордера.
+            symbol (str): Символ торгуемой пары (например, BTCUSDT).
+
+        Returns:
+            dict: Ответ от API в формате JSON.
+        """
+        endpoint = "/v2/private/order/cancel" # Конечная точка API для отмены ордера
+        url = self.base_url + endpoint
+        timestamp = str(int(time.time() * 1000))
+        params = {
+            "symbol": symbol,
+            "order_id": order_id,
+            "timestamp": timestamp,
+            "api_key": self.api_key
+        }
+        params['sign'] = self._generate_signature(params)
+
+        headers = {
+            "Content-Type": "application/json"
+        }
+        self._rate_limit() # Применяем ограничение скорости
+        response = requests.post(url, headers=headers, json=params)
+        return self._handle_response(response)

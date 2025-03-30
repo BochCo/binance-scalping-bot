@@ -19,7 +19,10 @@ class BybitFuturesClient(BaseExchangeClient):
             use_testnet (bool): Использовать тестовую сеть (True) или реальную (False).
         """
         super().__init__(api_key, api_secret)
-        self.base_url = "https://api-testnet.bybit.com" if use_testnet else "https://api.bybit.com" # Базовый URL для API Bybit
+        if use_testnet:
+            self.base_url = "https://api-testnet.bybit.com"
+        else:
+            self.base_url = "https://api.bybit.com"
         self.use_testnet = use_testnet
 
     def place_order(self, symbol, side, type, quantity, price=None):

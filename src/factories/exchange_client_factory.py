@@ -26,8 +26,12 @@ def get_exchange_client(config):
     binance_api_secret = config['DEFAULT']['binance_api_secret']
 
     if exchange == "bybit" and market_type == "futures":
-        use_testnet = config['BYBIT'].getboolean('use_testnet')
-        return BybitFuturesClient(bybit_api_key, bybit_api_secret, use_testnet)
+        use_testnet = config['BYBIT']['use_testnet']  # Считываем как строку
+        if use_testnet.lower() == "true":
+            base_url = "https://api-testnet.bybit.com"
+        else:
+            base_url = "https://api.bybit.com"
+        return BybitFuturesClient(bybit_api_key, bybit_api_secret, base_url) # Передаем base_url
     elif exchange == "bybit" and market_type == "spot":
         return BybitSpotClient(bybit_api_key, bybit_api_secret) # Еще не реализован
     elif exchange == "binance" and market_type == "futures":
