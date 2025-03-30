@@ -75,7 +75,7 @@ class BaseExchangeClient(IExchangeClient):
         """
         time.sleep(self.rate_limit_delay)
 
-    def _generate_signature(self, api_secret, timestamp, api_key, recv_window, endpoint, params):
+    def _generate_signature(self, api_secret, timestamp, api_key, recv_window, endpoint, raw_body):
         """
         Генерирует подпись для запроса к API Bybit v5.
 
@@ -85,22 +85,12 @@ class BaseExchangeClient(IExchangeClient):
             api_key (str): API ключ.
             recv_window (str): recv_window
             endpoint (str): Endpoint запроса
-            params (dict): Параметры запроса.
+            raw_body (str): raw_body
 
         Returns:
             str: Подпись запроса.
         """
-
-        sign_str = str(timestamp) + api_key + str(recv_window)
-
-        # Manually build the query string
-        query_string = ""
-        for key, value in sorted(params.items()):
-            query_string += f"{key}={value}&"
-        query_string = query_string[:-1]  # Remove the trailing "&"
-
-        sign_str += query_string
-
+        sign_str = str(timestamp) + api_key + str(recv_window) + raw_body
         print(f"_generate_signature - sign_str: {sign_str}")
         hash = hmac.new(api_secret.encode("utf-8"), sign_str.encode("utf-8"), hashlib.sha256)
         signature = hash.hexdigest()

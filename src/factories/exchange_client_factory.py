@@ -24,7 +24,7 @@ def get_exchange_client(config):
     bybit_api_secret = config['DEFAULT']['bybit_api_secret']
     binance_api_key = config['DEFAULT']['binance_api_key']
     binance_api_secret = config['DEFAULT']['binance_api_secret']
-
+    
     if exchange == "bybit" and market_type == "futures":
         use_testnet = config['BYBIT']['use_testnet']  # Считываем как строку
         if use_testnet.lower() == "true":

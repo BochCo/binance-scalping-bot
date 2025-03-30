@@ -53,15 +53,11 @@ class BybitFuturesClient(BaseExchangeClient):
         if price is None:
             del params["price"] # Price не нужен для MARKET ордеров
 
-        print(f"place_order - api_secret: {self.api_secret}")
-        print(f"place_order - timestamp: {timestamp}")
-        print(f"place_order - api_key: {self.api_key}")
-        print(f"place_order - recv_window: {recv_window}")
-        print(f"place_order - endpoint: {endpoint}")
-        print(f"place_order - params: {params}")
+        # Sort parameters alphabetically
+        sorted_params = dict(sorted(params.items()))
+        raw_body = json.dumps(sorted_params, separators=(',', ':'))
 
-
-        signature = self._generate_signature(self.api_secret, timestamp, self.api_key, recv_window, endpoint, params)
+        signature = self._generate_signature(self.api_secret, timestamp, self.api_key, recv_window, endpoint, raw_body)
 
         headers = {
             "Content-Type": "application/json",
@@ -72,7 +68,7 @@ class BybitFuturesClient(BaseExchangeClient):
         }
 
         self._rate_limit()  # Применяем ограничение скорости
-        response = requests.post(url, headers=headers, data=json.dumps(params))
+        response = requests.post(url, headers=headers, data=raw_body)
         return self._handle_response(response)
 
     def get_market_data(self, symbol):
@@ -113,15 +109,12 @@ class BybitFuturesClient(BaseExchangeClient):
             "accountType": "UNIFIED",  # Изменяем тип аккаунта
             "category": "linear"  # Добавляем категорию
         }
+        
+        # Sort parameters alphabetically
+        sorted_params = dict(sorted(params.items()))
+        raw_body = json.dumps(sorted_params, separators=(',', ':'))
 
-        print(f"get_balance - api_secret: {self.api_secret}")
-        print(f"get_balance - timestamp: {timestamp}")
-        print(f"get_balance - api_key: {self.api_key}")
-        print(f"get_balance - recv_window: {recv_window}")
-        print(f"get_balance - endpoint: {endpoint}")
-        print(f"get_balance - params: {params}")
-
-        signature = self._generate_signature(self.api_secret, timestamp, self.api_key, recv_window, endpoint, params)
+        signature = self._generate_signature(self.api_secret, timestamp, self.api_key, recv_window, endpoint, raw_body)
 
         headers = {
             "Content-Type": "application/json",
@@ -132,7 +125,7 @@ class BybitFuturesClient(BaseExchangeClient):
         }
 
         self._rate_limit()  # Применяем ограничение скорости
-        response = requests.get(url, headers=headers, params=params)
+        response = requests.post(url, headers=headers, data=raw_body)
         return self._handle_response(response)
 
     def cancel_order(self, order_id, symbol):
